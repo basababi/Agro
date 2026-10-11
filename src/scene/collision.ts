@@ -64,6 +64,8 @@ function stairRamp(): Float32Array {
 
 function isSolid(mesh: Mesh): boolean {
   const material = (mesh.material as Material).name;
+  // Thin overlays such as road markings, which lie on something solid anyway.
+  if (mesh.userData.solid === false) return false;
   if (PASSABLE_MESHES.has(mesh.name)) return false;
   if (PASSABLE_MATERIALS.has(material)) return false;
   if (mesh.userData.group === 'outdoor' && FLOWER_MATERIALS.has(material)) return false;

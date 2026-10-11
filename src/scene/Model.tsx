@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect } from 'react';
 import { Mesh, MeshStandardMaterial, type Material, type Object3D } from 'three';
 import { useStore } from '../store';
 import { getCollider } from './collision';
+import { addParking } from './parking';
 
 export const MODEL_URL = `/models/center.glb?v=${__MODEL_VERSION__}`;
 /** Self-hosted Draco decoder (public/draco). */
@@ -16,7 +17,9 @@ export type ModelGroup =
   | 'greenhouse'
   | 'outdoor'
   | 'vegetation'
-  | 'paths';
+  | 'paths'
+  /** Built in code (parking.ts), not part of the GLB. */
+  | 'parking';
 
 const GLASS = ['glass', 'gh_glass'];
 // Emissive strength per material, tuned for the renderer's exposure and filmic tone mapping
@@ -53,7 +56,8 @@ function prepareObjects(scene: Object3D) {
     if (!(object instanceof Mesh)) return;
     const material = object.material as Material;
     const flat = material.transparent || material.name in EMISSIVE;
-    object.castShadow = !flat && object.userData.group !== 'terrain';
+    const overlay = object.userData.solid === false;
+    object.castShadow = !flat && !overlay && object.userData.group !== 'terrain';
     object.receiveShadow = !flat;
   });
 }
@@ -63,6 +67,7 @@ export function Model() {
 
   useLayoutEffect(() => {
     fixMaterials(materials);
+    addParking(scene, materials);
     prepareObjects(scene);
   }, [scene, materials]);
 

@@ -23,11 +23,12 @@ export function Lighting({ shadows }: { shadows: boolean }) {
         intensity={5.2}
         color="#fff4e2"
         castShadow={shadows}
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={[4096, 4096]}
         shadow-bias={-0.0004}
         shadow-normalBias={0.05}
       >
-        <orthographicCamera attach="shadow-camera" args={[-30, 30, 30, -30, 20, 220]} />
+        {/* Wide enough for the site and the car park below the gate. */}
+        <orthographicCamera attach="shadow-camera" args={[-46, 46, 46, -46, 20, 220]} />
       </directionalLight>
     </>
   );

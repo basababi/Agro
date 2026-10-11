@@ -1,6 +1,7 @@
 import { Mesh, Raycaster, Vector3, type Object3D } from 'three';
 import { acceleratedRaycast, MeshBVH } from 'three-mesh-bvh';
-import { slopeHeight } from './coords';
+import { slopeHeight, worldToLocal } from './coords';
+import { roadSurface } from './parking';
 
 export type GroundSampler = (x: number, z: number) => number;
 
@@ -15,7 +16,6 @@ export function createGroundSampler(scene: Object3D): GroundSampler {
   if (!terrain) return slopeHeight;
 
   const mesh = terrain;
-  mesh.geometry.boundsTree ??= new MeshBVH(mesh.geometry);
   mesh.raycast = acceleratedRaycast;
   mesh.updateWorldMatrix(true, false);
 
@@ -24,9 +24,13 @@ export function createGroundSampler(scene: Object3D): GroundSampler {
   const origin = new Vector3();
 
   return (x, z) => {
+    // Built on first use: the terrain geometry is replaced once, when the car park is cut in.
+    mesh.geometry.boundsTree ??= new MeshBVH(mesh.geometry);
     raycaster.set(origin.set(x, 500, z), DOWN);
     const hit = raycaster.intersectObject(mesh, false)[0];
     // Beyond the terrain mesh the hillside simply continues (FarGround).
-    return hit ? hit.point.y : slopeHeight(x, z);
+    const ground = hit ? hit.point.y : slopeHeight(x, z);
+    // The access road is built up above the hillside.
+    return Math.max(ground, roadSurface(worldToLocal(x, z)[1]));
   };
 }

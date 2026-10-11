@@ -7,8 +7,9 @@ import { useCenterModel } from './Model';
 const RADIUS = 600;
 // The terrain mesh (±45 m) lies exactly on the 15° plane beyond ±25 m, so the far ground can
 // reach well under it. With a narrow overlap the 3 cm step shows as a bright gap when the
-// site is seen from outside at a low angle.
-const HOLE = 30;
+// site is seen from outside at a low angle. It must stay clear of the car park bays, though,
+// which are cut into the hillside down to ly = 33.7 (parking.ts).
+const HOLE = 34;
 const DROP = 0.03;
 /** A multiple of 8, so the corners of the square hole are sampled exactly. */
 const SEGMENTS = 64;
