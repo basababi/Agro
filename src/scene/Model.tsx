@@ -2,6 +2,7 @@ import { useGLTF } from '@react-three/drei';
 import { useEffect, useLayoutEffect } from 'react';
 import { Mesh, MeshStandardMaterial, type Material, type Object3D } from 'three';
 import { useStore } from '../store';
+import { getCollider } from './collision';
 
 export const MODEL_URL = `/models/center.glb?v=${__MODEL_VERSION__}`;
 /** Self-hosted Draco decoder (public/draco). */
@@ -66,8 +67,11 @@ export function Model() {
   }, [scene, materials]);
 
   useEffect(() => {
+    // Build the walk-mode collider while the loading screen is still up, so that entering
+    // walk mode later does not freeze a phone for half a second.
+    getCollider(scene);
     useStore.getState().setModelReady();
-  }, []);
+  }, [scene]);
 
   return <primitive object={scene} />;
 }

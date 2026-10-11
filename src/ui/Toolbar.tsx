@@ -5,11 +5,12 @@ const MODES: { id: Mode; label: string }[] = [
   { id: 'walk', label: 'Дотор нь алхах' },
 ];
 
+/** Bottom-centre bar of the overview. Walk mode has its own menu instead (Esc or "Цэс"). */
 export function Toolbar() {
   const started = useStore((s) => s.started);
   const mode = useStore((s) => s.mode);
   const setMode = useStore((s) => s.setMode);
-  if (!started) return null;
+  if (!started || mode === 'walk') return null;
 
   return (
     <nav className="toolbar panel" aria-label="Горим">

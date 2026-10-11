@@ -7,6 +7,7 @@ import { FarGround } from './FarGround';
 import { EXPOSURE, Lighting } from './Lighting';
 import { Model } from './Model';
 import { OrbitRig } from './OrbitRig';
+import { WalkController } from './WalkController';
 
 /** Forwards drei's loading progress to the store, so the UI shell does not import three. */
 function ProgressBridge() {
@@ -15,6 +16,12 @@ function ProgressBridge() {
     useStore.getState().setProgress(progress);
   }, [progress]);
   return null;
+}
+
+/** Exactly one rig owns the camera at a time. */
+function CameraRig() {
+  const mode = useStore((s) => s.mode);
+  return mode === 'walk' ? <WalkController /> : <OrbitRig />;
 }
 
 export default function Scene() {
@@ -31,7 +38,7 @@ export default function Scene() {
       <Suspense fallback={null}>
         <Model />
         <FarGround />
-        <OrbitRig />
+        <CameraRig />
       </Suspense>
     </Canvas>
   );
