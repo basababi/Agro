@@ -31,6 +31,11 @@ export default function Scene() {
       shadows={isTouchDevice ? false : 'percentage'}
       dpr={[1, isTouchDevice ? 1.5 : 1.75]}
       gl={{ toneMappingExposure: EXPOSURE }}
+      // Shader diagnostics only while developing: in production they cost synchronous GL calls,
+      // and ANGLE on Windows logs a harmless precision note for three's environment-map shader.
+      onCreated={({ gl }) => {
+        gl.debug.checkShaderErrors = import.meta.env.DEV;
+      }}
       camera={{ position: presets.aerial.pos, fov: 50, near: 0.1, far: 900 }}
     >
       <ProgressBridge />

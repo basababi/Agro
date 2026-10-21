@@ -3,6 +3,8 @@ import { useEffect, useLayoutEffect } from 'react';
 import { Mesh, MeshStandardMaterial, type Material, type Object3D } from 'three';
 import { useStore } from '../store';
 import { getCollider } from './collision';
+import { installBuilding } from './building/site';
+import { texturizeGround } from './ground';
 import { addParking } from './parking';
 
 export const MODEL_URL = `/models/center.glb?v=${__MODEL_VERSION__}`;
@@ -68,6 +70,8 @@ export function Model() {
   useLayoutEffect(() => {
     fixMaterials(materials);
     addParking(scene, materials);
+    installBuilding(scene, materials);
+    texturizeGround(scene, materials.grass);
     prepareObjects(scene);
   }, [scene, materials]);
 

@@ -42,6 +42,8 @@ export function FarGround() {
 
     const geo = new BufferGeometry();
     geo.setAttribute('position', new Float32BufferAttribute(positions, 3));
+    // world X/Z in metres, like the terrain (ground.ts), so the grass texture runs on across the seam
+    geo.setAttribute('uv', new Float32BufferAttribute(positions.filter((_, i) => i % 3 !== 1), 2));
     geo.setIndex(indices);
     geo.computeVertexNormals();
     return geo;
