@@ -216,9 +216,9 @@ export const PARTITIONS_F1: Partition[] = [
   radial(14.25, 0.22, [], 12.78),
   chord(29.4, 12.78, 32.6, OUTER_IN, P),
   radial(22.45, 0.2, [], 12.9),
-  // stair / lobby | dining room 8, doorway beyond the stair flight
-  // The threshold clears both the stair end and the outer-wall corner.
-  radial(44.9, P, [{ at: 13.1, width: 1.4, hinge: 'start', into: polar(O, 50, 13.1) }]),
+  // stair / lobby | dining room 8: place the doorway beside the stair, where it stays visible
+  // and leaves a clear approach between the wall and the stair flight.
+  radial(44.9, P, [{ at: 12.4, width: 1.4, hinge: 'start', into: polar(O, 50, 12.4) }]),
 ];
 
 /**
