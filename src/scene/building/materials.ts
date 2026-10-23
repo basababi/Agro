@@ -58,6 +58,7 @@ const OWN: Record<string, Spec> = {
   timeline: { color: '#ffffff', roughness: 0.8, map: 'timeline' },
   labEquipment: { color: '#e5e9e7', roughness: 0.48, metalness: 0.1 },
   labEquipmentDark: { color: '#35464c', roughness: 0.38, metalness: 0.2 },
+  exhibitWater: { color: '#75c4ce', roughness: 0.18, metalness: 0.06 },
   equipmentIndicator: { color: '#78c59a', roughness: 0.28, emissive: '#52d98a', emissiveIntensity: 0.65 },
   equipmentRubber: { color: '#252a2b', roughness: 0.86, metalness: 0.02 },
   labScreen: { color: '#142c32', roughness: 0.2, emissive: '#2d7374', emissiveIntensity: 0.42 },

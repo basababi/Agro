@@ -82,56 +82,59 @@ export function buildGreenhouse(b: Builder) {
 
   // Three distinct zones: forest seedlings, vertical hydroponics, and medicinal/rare specimens.
   const zones = [
-    { s: 0.3, kind: 'seedlings' },
-    { s: 0.56, kind: 'hydroponics' },
-    { s: 0.82, kind: 'specimens' },
+    { s: 0.2, kind: 'seedlings' },
+    { s: 0.5, kind: 'hydroponics' },
+    { s: 0.8, kind: 'specimens' },
   ] as const;
   for (const { s, kind } of zones) {
     const p0 = lerp2(a, bb, s - 0.055);
     const p1 = lerp2(a, bb, s + 0.055);
     const q0 = lerp2(d, c, s - 0.055);
     const q1 = lerp2(d, c, s + 0.055);
-    const near0 = lerp2(p0, q0, 0.14);
-    const near1 = lerp2(p1, q1, 0.14);
-    const far0 = lerp2(p0, q0, 0.88);
-    const far1 = lerp2(p1, q1, 0.88);
-    const bench: XZ[] = [near0, near1, far1, far0];
-    b.prism(bench, f + 0.72, f + 0.8, GH.bench);
-    b.prism(bench, f + 0.8, f + 0.86, GH.soil);
-    for (const leg of [near0, near1, far0, far1]) post(b, GH.frame, lerp2(leg, centre, 0.01), 0.05, f, f + 0.72);
-    const plantRows = kind === 'specimens' ? [0.3, 0.5, 0.7] : [0.25, 0.5, 0.75];
-    for (let i = 1; i < 12; i++) {
-      for (const w of plantRows) {
-        const q = lerp2(lerp2(near0, near1, w), lerp2(far0, far1, w), i / 12);
-        const h = kind === 'specimens' ? 0.12 + ((i * 7 + w * 13) % 4) * 0.02 : 0.18 + ((i * 7 + w * 13) % 5) * 0.03;
-        cone(b, GH.plant, q, 0.06, f + 0.86, f + 0.86 + h);
-      }
-    }
-    b.beam(GH.light, lerp2(near0, near1, 0.5), lerp2(far0, far1, 0.5), 0.12, f + 2.15, f + 2.2);
-
-    if (kind === 'hydroponics') {
-      // Two raised channels make the vertical-growing system visible from the courtyard.
-      for (const h of [1.25, 1.72]) {
-        for (const p of [near0, near1, far0, far1]) post(b, GH.frame, p, 0.035, f + 0.86, f + h);
-        const a0 = lerp2(near0, near1, 0.12);
-        const a1 = lerp2(near0, near1, 0.88);
-        const e0 = lerp2(far0, far1, 0.12);
-        const e1 = lerp2(far0, far1, 0.88);
-        b.beam(GH.bench, a0, a1, 0.11, f + h, f + h + 0.055);
-        b.beam(GH.bench, e0, e1, 0.11, f + h, f + h + 0.055);
-        for (let i = 1; i < 8; i++) {
-          const q0 = lerp2(a0, e0, i / 8);
-          const q1 = lerp2(a1, e1, i / 8);
-          cone(b, GH.plant, lerp2(q0, q1, 0.5), 0.045, f + h + 0.055, f + h + 0.2);
+    // Two bed modules leave a 1.2 m cross aisle through the greenhouse.
+    for (const [nearT, farT] of [[0.14, 0.41], [0.59, 0.88]] as const) {
+      const near0 = lerp2(p0, q0, nearT);
+      const near1 = lerp2(p1, q1, nearT);
+      const far0 = lerp2(p0, q0, farT);
+      const far1 = lerp2(p1, q1, farT);
+      const bench: XZ[] = [near0, near1, far1, far0];
+      b.prism(bench, f + 0.72, f + 0.8, GH.bench);
+      b.prism(bench, f + 0.8, f + 0.86, GH.soil);
+      for (const leg of [near0, near1, far0, far1]) post(b, GH.frame, lerp2(leg, centre, 0.01), 0.05, f, f + 0.72);
+      const plantRows = kind === 'specimens' ? [0.3, 0.5, 0.7] : [0.25, 0.5, 0.75];
+      for (let i = 1; i < 7; i++) {
+        for (const w of plantRows) {
+          const q = lerp2(lerp2(near0, near1, w), lerp2(far0, far1, w), i / 7);
+          const h = kind === 'specimens' ? 0.12 + ((i * 7 + w * 13) % 4) * 0.02 : 0.18 + ((i * 7 + w * 13) % 5) * 0.03;
+          cone(b, GH.plant, q, 0.06, f + 0.86, f + 0.86 + h);
         }
       }
-    } else {
-      // Small specimen tags at the front of the nursery and botanical sample beds.
-      for (const w of [0.18, 0.5, 0.82]) {
-        const p = lerp2(near0, near1, w);
-        post(b, GH.frame, p, 0.025, f + 0.86, f + 1.12);
-        const tag: XZ = [p[0] + (centre[0] - p[0]) * 0.08, p[1] + (centre[1] - p[1]) * 0.08];
-        b.beam(GH.bench, p, tag, 0.035, f + 1.02, f + 1.13);
+      b.beam(GH.light, lerp2(near0, near1, 0.5), lerp2(far0, far1, 0.5), 0.12, f + 2.15, f + 2.2);
+
+      if (kind === 'hydroponics') {
+        // Two raised channels make the vertical-growing system visible from the courtyard.
+        for (const h of [1.25, 1.72]) {
+          for (const p of [near0, near1, far0, far1]) post(b, GH.frame, p, 0.035, f + 0.86, f + h);
+          const a0 = lerp2(near0, near1, 0.12);
+          const a1 = lerp2(near0, near1, 0.88);
+          const e0 = lerp2(far0, far1, 0.12);
+          const e1 = lerp2(far0, far1, 0.88);
+          b.beam(GH.bench, a0, a1, 0.11, f + h, f + h + 0.055);
+          b.beam(GH.bench, e0, e1, 0.11, f + h, f + h + 0.055);
+          for (let i = 1; i < 5; i++) {
+            const q0 = lerp2(a0, e0, i / 5);
+            const q1 = lerp2(a1, e1, i / 5);
+            cone(b, GH.plant, lerp2(q0, q1, 0.5), 0.045, f + h + 0.055, f + h + 0.2);
+          }
+        }
+      } else {
+        // Small specimen tags at the front of the nursery and botanical sample beds.
+        for (const w of [0.18, 0.5, 0.82]) {
+          const p = lerp2(near0, near1, w);
+          post(b, GH.frame, p, 0.025, f + 0.86, f + 1.12);
+          const tag: XZ = [p[0] + (centre[0] - p[0]) * 0.08, p[1] + (centre[1] - p[1]) * 0.08];
+          b.beam(GH.bench, p, tag, 0.035, f + 1.02, f + 1.13);
+        }
       }
     }
   }

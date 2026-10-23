@@ -46,6 +46,7 @@ export const FURN = {
   screen: 'labScreen',
   indicator: 'equipmentIndicator',
   rubber: 'equipmentRubber',
+  water: 'exhibitWater',
   chemical: 'chemicalCabinet',
   linen: 'linen',
   seasonSpring: 'seasonSpring',
@@ -301,29 +302,59 @@ function microscope(b: Builder, c: XZ, angle: number, floor: number) {
   }
 }
 
-/** A four-season interactive landscape model on a low display island. */
+/** The central four-season forest island, with a clear circulation ring around it. */
 function seasonalModel(b: Builder, c: XZ, floor: number) {
   const f = frame(c, 0);
-  box(b, FURN.woodDark, f, 0, 0, 2.4, 1.45, floor, floor + 0.48);
-  box(b, FURN.wood, f, 0, 0, 2.48, 1.53, floor + 0.48, floor + 0.55);
+  b.prism(ellipse(f, 0, 0, 1.47, 1.47, 48), floor, floor + 0.22, FURN.woodDark);
+  b.prism(ellipse(f, 0, 0, 1.4, 1.4, 48), floor + 0.22, floor + 0.3, FURN.wood);
+  b.prism(ellipse(f, 0, 0, 1.27, 1.27, 48), floor + 0.3, floor + 0.38, FURN.soil);
+
+  // Four tactile landscape quadrants surround the central native-tree grove.
   const seasons = [FURN.seasonSpring, FURN.seasonSummer, FURN.seasonAutumn, FURN.seasonWinter];
   for (let i = 0; i < seasons.length; i++) {
-    const x = i % 2 === 0 ? -0.57 : 0.57;
-    const z = i < 2 ? -0.32 : 0.32;
-    box(b, seasons[i], f, x, z, 1.02, 0.53, floor + 0.56, floor + 0.63);
-    // Low tree forms make the four landscape states readable from above.
-    box(b, FURN.woodDark, f, x, z, 0.12, 0.12, floor + 0.63, floor + 0.86);
-    foliage(b, [c[0] + x, floor + 1.02, c[1] + z], 0.24, 0.8);
+    const a0 = i * 90 + 5;
+    const a1 = (i + 1) * 90 - 5;
+    b.prism(sector(c, 1.02, 1.25, a0, a1).poly, floor + 0.38, floor + 0.45, seasons[i]);
+    const a = a0 + 45;
+    const p = polar(c, a, 1.11);
+    const dx = p[0] - c[0];
+    const dz = p[1] - c[1];
+    box(b, FURN.woodDark, f, dx, dz, 0.09, 0.09, floor + 0.45, floor + 0.78);
+    foliage(b, [p[0], floor + 0.96, p[1]], 0.22, 0.78);
   }
-  shade(b, c, 0, 0, 0, 2.48, 1.53, floor, 0.12);
+
+  b.prism(ellipse(f, 0, 0, 0.88, 0.88, 32), floor + 0.38, floor + 0.5, FURN.soil);
+  const trees: [number, number, number, number][] = [
+    [-0.34, -0.17, 1.58, 0.42], [0.18, -0.3, 1.38, 0.36],
+    [0.33, 0.22, 1.78, 0.44], [-0.24, 0.38, 1.27, 0.34],
+  ];
+  for (const [x, z, top, crown] of trees) {
+    b.prism(ellipse(f, x, z, 0.075, 0.075, 10), floor + 0.5, floor + top - crown * 0.45, FURN.woodDark);
+    const p = f(x, z);
+    foliage(b, [p[0], floor + top, p[1]], crown, 0.9);
+    foliage(b, [p[0] + 0.08, floor + top - 0.24, p[1] - 0.04], crown * 0.72, 0.85);
+  }
+  // Four low touch points sit on the exhibit rim rather than in the walking aisle.
+  for (const [x, z] of [[0, -0.83], [0.83, 0], [0, 0.83], [-0.83, 0]] as const) {
+    box(b, FURN.equipmentDark, f, x, z, 0.28, 0.16, floor + 0.46, floor + 0.5);
+    box(b, FURN.screen, f, x, z, 0.22, 0.11, floor + 0.5, floor + 0.507);
+  }
+  shade(b, c, 0, 0, 0, 2.94, 2.94, floor, 0.14);
 }
 
-/** A square table with a chair on each side. */
-function bench(b: Builder, c: XZ, angle: number, length: number, depth: number, floor: number, height = 0.45) {
-  const f = frame(c, angle);
-  box(b, FURN.wood, f, 0, 0, length, depth, floor + height - 0.05, floor + height);
-  for (const sx of [-1, 1]) box(b, FURN.frame, f, sx * (length / 2 - 0.12), 0, 0.05, depth - 0.08, floor, floor + height - 0.05);
-  shade(b, c, angle, 0, 0, length, depth, floor, 0.08);
+/** A low circular tree-ring exhibit, kept beside the main island and out of the door path. */
+function treeRingDisplay(b: Builder, c: XZ, floor: number) {
+  const f = frame(c, 0);
+  b.prism(ellipse(f, 0, 0, 0.88, 0.88, 36), floor, floor + 0.68, FURN.woodDark);
+  b.prism(ellipse(f, 0, 0, 0.83, 0.83, 36), floor + 0.68, floor + 0.74, FURN.wood);
+  for (let i = 0; i < 7; i++) {
+    const radius = 0.68 - i * 0.085;
+    b.prism(ellipse(f, 0, 0, radius, radius, 32), floor + 0.74 + i * 0.006, floor + 0.746 + i * 0.006, i % 2 ? FURN.woodDark : FURN.wood);
+  }
+  b.prism(ellipse(f, 0, 0, 0.09, 0.09, 16), floor + 0.786, floor + 0.8, FURN.woodDark);
+  box(b, FURN.equipmentDark, f, 0, -0.73, 0.3, 0.07, floor + 0.74, floor + 0.79);
+  box(b, FURN.screen, f, 0, -0.73, 0.24, 0.01, floor + 0.79, floor + 0.797);
+  shade(b, c, 0, 0, 0, 1.76, 1.76, floor, 0.1);
 }
 
 /**
@@ -414,7 +445,7 @@ function touchTable(b: Builder, c: XZ, angle: number, length: number, depth: num
   shade(b, c, angle, 0, 0, length, depth, floor);
 }
 
-/** A glass display case on a timber base, with soil monoliths standing in it. */
+/** A glass display case comparing vegetated soil with bare, eroding soil. */
 function vitrine(b: Builder, c: XZ, angle: number, length: number, depth: number, floor: number) {
   const f = frame(c, angle);
   const glass0 = floor + 0.85;
@@ -425,14 +456,24 @@ function vitrine(b: Builder, c: XZ, angle: number, length: number, depth: number
   box(b, FURN.glass, f, 0, 0, length - 0.04, depth - 0.04, glass0, glass1);
   for (const [sx, sz] of CORNERS) box(b, FURN.frame, f, sx * (length / 2 - 0.03), sz * (depth / 2 - 0.03), 0.025, 0.025, glass0, glass1);
   for (const sz of [-1, 1]) box(b, FURN.frame, f, 0, sz * (depth / 2 - 0.03), length - 0.04, 0.025, glass1 - 0.025, glass1);
-  // soil profiles: dark topsoil over brown subsoil over pale parent rock
-  const samples = 6;
-  for (let i = 0; i < samples; i++) {
-    const x = -length / 2 + ((i + 0.5) * length) / samples;
-    box(b, FURN.frame, f, x, 0, 0.04, 0.04, glass0, glass0 + 0.05);
-    box(b, FURN.stone, f, x, 0, 0.22, 0.05, glass0 + 0.05, glass0 + 0.14);
-    box(b, FURN.soil, f, x, 0, 0.22, 0.05, glass0 + 0.14, glass0 + 0.3);
-    box(b, FURN.woodDark, f, x, 0, 0.22, 0.05, glass0 + 0.3, glass0 + 0.36);
+  // Two sloped soil beds, one planted and one bare, drain into a visible collection channel.
+  const bedDepth = depth * 0.48;
+  for (const [x, planted] of [[-length * 0.23, true], [length * 0.23, false]] as const) {
+    box(b, FURN.frame, f, x, 0, length * 0.38, bedDepth, glass0 + 0.04, glass0 + 0.1);
+    box(b, FURN.soil, f, x, -depth * 0.035, length * 0.36, bedDepth * 0.75, glass0 + 0.1, glass0 + 0.31);
+    box(b, FURN.woodDark, f, x, -depth * 0.035, length * 0.36, 0.035, glass0 + 0.31, glass0 + 0.34);
+    box(b, FURN.water, f, x, depth * 0.31, length * 0.38, 0.095, glass0 + 0.1, glass0 + 0.16);
+    if (planted) {
+      for (const px of [-0.48, -0.16, 0.16, 0.48]) {
+        const p = f(x + px, -depth * 0.035);
+        foliage(b, [p[0], glass0 + 0.35 + (px === 0 ? 0.03 : 0), p[1]], 0.1, 0.72);
+      }
+    } else {
+      for (const px of [-0.38, 0, 0.38]) {
+        const p = f(x + px, -depth * 0.035);
+        b.prism(ellipse(frame(p, 0), 0, 0, 0.055, 0.04, 8), glass0 + 0.31, glass0 + 0.36, FURN.stone);
+      }
+    }
   }
 }
 
@@ -566,23 +607,19 @@ const DIVIDER_15_16 = 1;
 
 /** Lobby (1): six learning stops, with the timeline and seasonal model as the main exhibits. */
 function lobby(b: Builder) {
-  touchTable(b, [0.64, -12.41], 0, 2.5, 0.85, F1);
-  vitrine(b, [-2.84, -7.63], 0, 2.5, 0.85, F1);
+  // Pair the interactive forest map and soil experiment beside the entry, leaving a straight,
+  // generous route from the courtyard doors to the main island.
+  touchTable(b, [-2.75, -7.55], 0, 1.9, 0.78, F1);
+  vitrine(b, [2.75, -7.55], 0, 2.0, 0.82, F1);
   seasonalModel(b, [0.2, -10.35], F1);
-  // two benches with a planter between them
-  bench(b, [2.57, -10.75], 0, 1.1, 0.38, F1);
-  bench(b, [2.57, -9.96], 0, 1.1, 0.38, F1);
-  box(b, FURN.woodDark, frame([2.57, -10.355], 0), 0, 0, 0.42, 0.4, F1, F1 + 0.45);
-  foliage(b, [2.57, F1 + 0.72, -10.355], 0.3, 0.75);
-  shade(b, [2.57, -10.355], 0, 0, 0, 0.42, 0.4, F1, 0.08);
+  // A separate tree-ring table sits to the right with a full visitor aisle around it.
+  treeRingDisplay(b, [4.3, -10.35], F1);
   // counter and timeline panel along the back wall
   arcCounter(b, O, OUTER_IN - 0.5, OUTER_IN - 0.005, -8.6, 13.6, F1);
   arcPanel(b, FURN.timeline, O, OUTER_IN - 0.02, -8.2, 13.2, F1 + 1.25, F1 + 2.75);
   // bench along room 3's curved wall
-  arcBench(b, O, 9.95, 10.4, -34.3, -10.4, F1);
-  pottedPlant(b, polar(I, -15, 8.6), F1, 1.1);
-  pottedPlant(b, polar(I, 15, 8.6), F1, 1.1);
-  pottedPlant(b, polar(O, -6.5, 12.6), F1, 0.9);
+  arcBench(b, O, 9.95, 10.4, -34.3, -18.5, F1);
+  // Keep the entrance approach and the loop around the island free of loose furniture.
   for (const r of [9.0, 11.4]) for (const t of [-3, 6, 15, 24, 33]) ceilingLight(b, polar(O, t, r), CEILING[0]);
   for (const t of [-3, 6]) ceilingLight(b, polar(O, t, 13.6), CEILING[0]);
 }
@@ -617,11 +654,11 @@ function classroom(b: Builder) {
 function staffRooms(b: Builder) {
   // room 4: men's staff quarters
   cabinets(b, radialFace(-41.8, P, 12.0, -1), radialFace(-41.8, P, 14.55, -1), -1, 0.5, F1, { tall: true });
-  bed(b, [-11.65, -8.3], 35, F1);
+  bed(b, polar(O, -49, 13.1), 41, F1);
   ceilingLight(b, polar(O, -49.5, 13.3), CEILING[0]);
   // room 5: women's staff quarters
   cabinets(b, leftEndFace(5.75), leftEndFace(7.75), 1, 0.5, F1, { tall: true });
-  bed(b, [-13.1, -6.3], 25, F1);
+  bed(b, polar(O, -61.3, 13.15), 28.7, F1);
   ceilingLight(b, polar(O, -66, 13.3), CEILING[0]);
 }
 
@@ -642,7 +679,8 @@ function office7(b: Builder) {
   workstation(b, desk, 35, F1);
   chair(b, frame(desk, 35)(0, 0.66), 35 + 180, F1);
   cabinets(b, leftEndFace(0.75), leftEndFace(2.45), 1, 0.55, F1, { height: 1.85, tall: true });
-  appliance(b, polar(I, -68, 8.65), 22, 0.54, 0.5, 0.72, F1);
+  const endWall = frame(mid(END.left.inner, END.left.outer), heading(END.left.inner, END.left.outer));
+  appliance(b, endWall(2.8 - dist(END.left.inner, mid(END.left.inner, END.left.outer)), 0.46), 22, 0.54, 0.5, 0.72, F1);
   ceilingLight(b, polar(O, -58, 8.0), CEILING[0]);
 }
 
@@ -669,8 +707,10 @@ function workshop(b: Builder) {
   ];
   for (const c of benches) {
     table(b, c, -15, 1.85, 0.82, F1);
-    chair(b, frame(c, -15)(0, 0.68), 165, F1);
-    chair(b, frame(c, -15)(0, -0.68), -15, F1);
+    for (const x of [-0.42, 0.42]) {
+      chair(b, frame(c, -15)(x, 0.69), -105, F1);
+      chair(b, frame(c, -15)(x, -0.69), 75, F1);
+    }
   }
   // Reused wood stock, paper pulp tubs and a tray for seed-starting demonstrations.
   cabinets(b, polar(O, 73, 12.6), polar(O, 59, 12.6), -1, 0.42, F1, { height: 0.9, top: FURN.wood });
@@ -704,7 +744,7 @@ function laboratory(b: Builder) {
   box(b, FURN.steel, f, 1.2, 0, 0.45, 0.4, F2 + 0.9, F2 + 0.903);
   box(b, FURN.steel, f, 1.2, 0.22, 0.03, 0.03, F2 + 0.9, F2 + 1.15);
   for (const x of [-0.9, 0.1]) chair(b, f(x, -0.42), -13 + 90, F2);
-  workstation(b, frame(c, -13)(-0.35, 0.08), -13, F2, 0.9);
+  workstation(b, frame(c, -13)(-0.35, -0.08), -13, F2, 0.9);
   // wall counter with a shelf above, on the wall to room 14
   const a = radialFace(-41.85, P, 10.6, 1);
   const e = radialFace(-41.85, P, 14.45, 1);
