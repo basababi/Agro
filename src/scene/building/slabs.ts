@@ -48,17 +48,27 @@ export function buildSlabs(shell: Builder) {
   shell.slab(ring, [stairOpening()], LEVEL.f2 - LEVEL.slab, LEVEL.f2, SLAB.floor, SLAB.ceiling, SLAB.edge);
   shell.slab(ring, [], LEVEL.roof, LEVEL.roof + LEVEL.roofSlab, SLAB.roof, SLAB.ceiling, SLAB.edge);
 
-  // Solar panels in three rows along the arc, facing away from the courtyard (south-east, uphill).
+  // Two rows of 45 N-type 550 W panels, matching the revised roof schedule.
+  // Each module keeps the 2.28 m radial length; the available curved roof sets its arc spacing.
+  // The 1.45 m clear strip between rows is reserved as the maintenance aisle.
   const roofTop = LEVEL.roof + LEVEL.roofSlab;
   const low = 0.3;
-  const high = 1.0;
-  for (const r of [9.4, 11.3, 13.2]) {
-    for (let a = -68; a <= 64; a += 5.0) {
-      const a1 = a + 4.3 * (11.3 / r);
-      const front0 = polar(O, a, r + 0.75);
-      const front1 = polar(O, a1, r + 0.75);
-      const back0 = polar(O, a, r - 0.75);
-      const back1 = polar(O, a1, r - 0.75);
+  const high = 0.72;
+  const panelLength = 2.28;
+  const rowCentres = [9.6, 13.33];
+  const rowCount = 45;
+  const start = -71.5;
+  const span = 143;
+  for (const r of rowCentres) {
+    for (let i = 0; i < rowCount; i++) {
+      const a = start + (span * i) / rowCount;
+      const a1 = start + (span * (i + 1)) / rowCount - 0.12;
+      const inner = r - panelLength / 2;
+      const outer = r + panelLength / 2;
+      const front0 = polar(O, a, outer);
+      const front1 = polar(O, a1, outer);
+      const back0 = polar(O, a, inner);
+      const back1 = polar(O, a1, inner);
       shell.quad(SLAB.solar, [front0[0], roofTop + low, front0[1]], [front1[0], roofTop + low, front1[1]], [back1[0], roofTop + high, back1[1]], [back0[0], roofTop + high, back0[1]], [0, 1, 0]);
       shell.quad(SLAB.solarFrame, [front0[0], roofTop + low - 0.04, front0[1]], [front1[0], roofTop + low - 0.04, front1[1]], [back1[0], roofTop + high - 0.04, back1[1]], [back0[0], roofTop + high - 0.04, back0[1]], [0, -1, 0]);
       for (const p of [front0, front1]) post(shell, SLAB.solarFrame, p, 0.06, roofTop, roofTop + low);

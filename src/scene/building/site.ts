@@ -8,6 +8,7 @@ import { arcPoints, Builder, sector } from './builder';
 import { greenhouseCorners } from './greenhouse';
 import { buildBuilding } from './index';
 import { texture } from '../textures';
+import { addWasteStations } from '../wasteStations';
 import { DEG, I, INNER_OUT, LEVEL, O, OUTER_END, OUTER_OUT, toPolar, type XZ } from './plan';
 
 /** Groups of the Blender model that the new building replaces. */
@@ -128,4 +129,5 @@ export function installBuilding(scene: Object3D, materials: Record<string, Mater
   site.position.copy(building.position);
   site.rotation.copy(building.rotation);
   frame.add(site);
+  addWasteStations(frame);
 }

@@ -56,6 +56,17 @@ const OWN: Record<string, Spec> = {
   mirror: { color: '#d7dee2', roughness: 0.06, metalness: 0.9 },
   books: { color: '#ffffff', roughness: 0.8, map: 'books' },
   timeline: { color: '#ffffff', roughness: 0.8, map: 'timeline' },
+  labEquipment: { color: '#e5e9e7', roughness: 0.48, metalness: 0.1 },
+  labEquipmentDark: { color: '#35464c', roughness: 0.38, metalness: 0.2 },
+  equipmentIndicator: { color: '#78c59a', roughness: 0.28, emissive: '#52d98a', emissiveIntensity: 0.65 },
+  equipmentRubber: { color: '#252a2b', roughness: 0.86, metalness: 0.02 },
+  labScreen: { color: '#142c32', roughness: 0.2, emissive: '#2d7374', emissiveIntensity: 0.42 },
+  chemicalCabinet: { color: '#cfb85b', roughness: 0.55 },
+  linen: { color: '#dce4dc', roughness: 0.95 },
+  seasonSpring: { color: '#8ebd72', roughness: 0.72 },
+  seasonSummer: { color: '#477f4d', roughness: 0.72 },
+  seasonAutumn: { color: '#cb8a43', roughness: 0.72 },
+  seasonWinter: { color: '#d5e1e4', roughness: 0.72 },
 };
 
 /** Keys taken over from the model's own materials (by material name). */

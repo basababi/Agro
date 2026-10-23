@@ -1,12 +1,8 @@
-// Furniture, fittings, floor finishes and ceiling lights after the furnished plan (third drawing),
-// measured from it in the building frame: the lobby's exhibits and seating, the classroom desks,
-// the staff rooms, toilets and washroom, the dining tables, the laboratory benches and shelving.
-// Rooms the drawing leaves empty (the stair hall) only get lights and a plant.
+// Furniture, fittings, exhibits and lights in the updated room plan, measured in the building frame.
 
 import { IcosahedronGeometry } from 'three';
 import { arcPoints, Builder, sector, type V3 } from './builder';
 import {
-  ARC_PARTITIONS_F1,
   ARC_PARTITIONS_F2,
   DEG,
   END,
@@ -45,6 +41,17 @@ export const FURN = {
   mirror: 'mirror',
   books: 'books',
   timeline: 'timeline',
+  equipment: 'labEquipment',
+  equipmentDark: 'labEquipmentDark',
+  screen: 'labScreen',
+  indicator: 'equipmentIndicator',
+  rubber: 'equipmentRubber',
+  chemical: 'chemicalCabinet',
+  linen: 'linen',
+  seasonSpring: 'seasonSpring',
+  seasonSummer: 'seasonSummer',
+  seasonAutumn: 'seasonAutumn',
+  seasonWinter: 'seasonWinter',
   tile: 'floorTile',
   vinyl: 'floorVinyl',
   shadow: 'contactShadow',
@@ -179,17 +186,139 @@ function chair(b: Builder, c: XZ, face: number, floor: number) {
   shade(b, c, face, 0, 0, 0.44, 0.44, floor, 0.05);
 }
 
-/** A square table with a chair on each side. */
-function tableSet(b: Builder, c: XZ, angle: number, floor: number, size = 1.1) {
-  table(b, c, angle, size, size, floor);
+/** A bed and locker for the staff rest rooms. */
+function bed(b: Builder, c: XZ, angle: number, floor: number) {
   const f = frame(c, angle);
-  for (let k = 0; k < 4; k++) {
-    const d = size / 2 + 0.12;
-    const t = k * 90 * DEG;
-    chair(b, f(Math.cos(t) * d, Math.sin(t) * d), angle + k * 90 + 180, floor);
+  box(b, FURN.frame, f, 0, 0, 1.95, 0.92, floor, floor + 0.3);
+  box(b, FURN.linen, f, 0, 0, 1.88, 0.88, floor + 0.3, floor + 0.48);
+  box(b, FURN.wood, f, 0.42, 0, 1.0, 0.86, floor + 0.48, floor + 0.51);
+  box(b, FURN.linen, f, -0.64, 0, 0.36, 0.62, floor + 0.48, floor + 0.58);
+  shade(b, c, angle, 0, 0, 1.95, 0.92, floor, 0.12);
+}
+
+/** A small sofa for the upstairs changing and rest area. */
+function sofa(b: Builder, c: XZ, angle: number, floor: number) {
+  const f = frame(c, angle);
+  box(b, FURN.woodDark, f, 0, 0, 1.85, 0.72, floor, floor + 0.32);
+  box(b, FURN.linen, f, 0, 0.02, 1.78, 0.68, floor + 0.32, floor + 0.52);
+  box(b, FURN.linen, f, 0, -0.29, 1.82, 0.14, floor + 0.52, floor + 1.02);
+  for (const x of [-0.84, 0.84]) box(b, FURN.linen, f, x, 0, 0.14, 0.68, floor + 0.48, floor + 0.88);
+  shade(b, c, angle, 0, 0, 1.85, 0.72, floor, 0.12);
+}
+
+/** A compact appliance with a display and a metal work surface. */
+function chamferedBox(b: Builder, key: string, f: Local, length: number, depth: number, y0: number, y1: number, bevel = 0.045) {
+  const x = length / 2;
+  const z = depth / 2;
+  const cut = Math.min(bevel, length * 0.12, depth * 0.12);
+  const outline: XZ[] = [
+    [-x + cut, -z], [x - cut, -z], [x, -z + cut], [x, z - cut],
+    [x - cut, z], [-x + cut, z], [-x, z - cut], [-x, -z + cut],
+  ].map(([px, pz]) => f(px, pz));
+  b.prism(outline, y0, y1, key, key);
+}
+
+/** A compact appliance with softened casing edges, a recessed control panel and hardware. */
+function appliance(b: Builder, c: XZ, angle: number, length: number, depth: number, height: number, floor: number, kind: 'standard' | 'hood' = 'standard') {
+  const f = frame(c, angle);
+  const front = depth / 2;
+  const screenW = Math.min(0.25, length * 0.34);
+  const panelH = Math.max(0.16, Math.min(0.31, height * 0.22));
+  box(b, FURN.frame, f, 0, 0, length - 0.06, depth - 0.06, floor, floor + 0.075);
+  chamferedBox(b, FURN.equipment, f, length, depth, floor + 0.075, floor + height - 0.035, Math.min(0.055, depth * 0.1));
+  // A fine stainless cap and a darker plinth make the casing read as assembled equipment.
+  box(b, FURN.steel, f, 0, 0, length + 0.022, depth + 0.022, floor + height - 0.035, floor + height);
+  box(b, FURN.rubber, f, 0, front + 0.012, Math.min(0.43, length * 0.68), 0.012, floor + 0.1, floor + 0.14);
+  // Recessed controls: dark surround, glass display, and tactile controls beside it.
+  const panelY = floor + (kind === 'hood' ? height * 0.16 : Math.min(height * 0.64, height - panelH - 0.08));
+  box(b, FURN.equipmentDark, f, 0, front + 0.012, Math.min(0.42, length * 0.68), 0.016, panelY, panelY + panelH);
+  box(b, FURN.screen, f, -Math.min(0.045, length * 0.08), front + 0.022, screenW, 0.008, panelY + panelH * 0.24, panelY + panelH * 0.78);
+  for (let i = 0; i < 2; i++) {
+    const bx = Math.min(0.12, length * 0.18) + i * 0.065;
+    if (bx < length * 0.34) {
+      box(b, FURN.steel, f, bx, front + 0.025, 0.032, 0.018, panelY + panelH * 0.55, panelY + panelH * 0.75);
+      box(b, FURN.indicator, f, bx, front + 0.036, 0.012, 0.006, panelY + panelH * 0.28, panelY + panelH * 0.4);
+    }
+  }
+  // Door line, pull handle and low ventilation slots give the cabinet visible scale.
+  if (height > 0.58) {
+    box(b, FURN.frame, f, length * 0.18, front + 0.012, 0.006, 0.009, floor + 0.18, panelY - 0.08);
+    box(b, FURN.steel, f, length * 0.34, front + 0.035, 0.025, 0.025, floor + height * 0.36, floor + height * 0.58);
+  }
+  if (height > 0.55) {
+    const vents = Math.max(2, Math.min(6, Math.floor(length / 0.13)));
+    for (let i = 0; i < vents; i++) {
+      const x = -((vents - 1) * 0.055) / 2 + i * 0.055;
+      box(b, FURN.equipmentDark, f, x, front + 0.012, 0.028, 0.008, floor + 0.19, floor + 0.205);
+    }
+  }
+  if (kind === 'hood') {
+    // A glazed sash and work chamber identify this as a fume hood rather than a plain cabinet.
+    const chamberBottom = floor + height * 0.38;
+    const chamberTop = floor + height * 0.78;
+    box(b, FURN.frame, f, 0, front + 0.018, length * 0.76, 0.024, chamberBottom, chamberTop);
+    box(b, FURN.glass, f, 0, front + 0.034, length * 0.68, 0.008, chamberBottom + 0.025, chamberTop - 0.025);
+    box(b, FURN.steel, f, 0, front + 0.05, length * 0.73, 0.018, chamberBottom, chamberBottom + 0.025);
+    box(b, FURN.steel, f, 0, 0, length * 0.82, depth * 0.86, floor + height * 0.82, floor + height * 0.85);
+    box(b, FURN.equipmentDark, f, 0, front + 0.017, length * 0.28, 0.012, floor + height * 0.89, floor + height * 0.93);
+  }
+  shade(b, c, angle, 0, 0, length, depth, floor, 0.09);
+}
+
+/** A small monitor and keyboard for office or lab workstations. */
+function workstation(b: Builder, c: XZ, angle: number, floor: number, tabletop = 0.77) {
+  const f = frame(c, angle);
+  box(b, FURN.equipmentDark, f, 0, 0, 0.46, 0.3, floor + tabletop, floor + tabletop + 0.03);
+  box(b, FURN.frame, f, 0, -0.08, 0.08, 0.05, floor + tabletop + 0.03, floor + tabletop + 0.34);
+  box(b, FURN.equipmentDark, f, 0, -0.08, 0.58, 0.065, floor + tabletop + 0.31, floor + tabletop + 0.68);
+  box(b, FURN.screen, f, 0, -0.043, 0.51, 0.008, floor + tabletop + 0.34, floor + tabletop + 0.65);
+  box(b, FURN.frame, f, 0, -0.08, 0.1, 0.06, floor + tabletop + 0.68, floor + tabletop + 0.7);
+  // Keyboard keys are spaced in rows; a mouse and its cable-side rest complete the workstation.
+  box(b, FURN.equipmentDark, f, 0, 0.3, 0.44, 0.19, floor + tabletop, floor + tabletop + 0.026);
+  for (let row = 0; row < 3; row++) {
+    for (let col = 0; col < 9; col++) {
+      box(b, FURN.rubber, f, -0.185 + col * 0.046, 0.235 + row * 0.05, 0.026, 0.018, floor + tabletop + 0.027, floor + tabletop + 0.031);
+    }
+  }
+  box(b, FURN.equipmentDark, f, 0.31, 0.3, 0.085, 0.11, floor + tabletop, floor + tabletop + 0.04);
+}
+
+/** A compact microscope model for the lab worktops. */
+function microscope(b: Builder, c: XZ, angle: number, floor: number) {
+  const f = frame(c, angle);
+  const y = floor + 0.9;
+  b.prism(ellipse(f, 0, 0, 0.18, 0.15), y, y + 0.07, FURN.equipmentDark);
+  b.prism(ellipse(f, -0.02, -0.01, 0.075, 0.07), y + 0.07, y + 0.31, FURN.equipment);
+  box(b, FURN.equipmentDark, f, 0, 0.005, 0.21, 0.16, y + 0.3, y + 0.33);
+  box(b, FURN.equipment, f, -0.035, -0.045, 0.13, 0.19, y + 0.32, y + 0.37);
+  // Arm, eyepiece and objective lenses use contrasting metal and dark optics.
+  box(b, FURN.equipment, f, -0.02, -0.01, 0.065, 0.055, y + 0.3, y + 0.52);
+  box(b, FURN.equipmentDark, f, -0.01, -0.06, 0.085, 0.13, y + 0.49, y + 0.56);
+  box(b, FURN.equipment, f, 0.035, 0.025, 0.042, 0.085, y + 0.34, y + 0.45);
+  b.prism(ellipse(f, 0.045, 0.025, 0.026, 0.026), y + 0.34, y + 0.37, FURN.rubber);
+  for (const x of [-0.095, 0.095]) {
+    b.prism(ellipse(f, x, 0.015, 0.038, 0.038), y + 0.2, y + 0.24, FURN.steel);
   }
 }
 
+/** A four-season interactive landscape model on a low display island. */
+function seasonalModel(b: Builder, c: XZ, floor: number) {
+  const f = frame(c, 0);
+  box(b, FURN.woodDark, f, 0, 0, 2.4, 1.45, floor, floor + 0.48);
+  box(b, FURN.wood, f, 0, 0, 2.48, 1.53, floor + 0.48, floor + 0.55);
+  const seasons = [FURN.seasonSpring, FURN.seasonSummer, FURN.seasonAutumn, FURN.seasonWinter];
+  for (let i = 0; i < seasons.length; i++) {
+    const x = i % 2 === 0 ? -0.57 : 0.57;
+    const z = i < 2 ? -0.32 : 0.32;
+    box(b, seasons[i], f, x, z, 1.02, 0.53, floor + 0.56, floor + 0.63);
+    // Low tree forms make the four landscape states readable from above.
+    box(b, FURN.woodDark, f, x, z, 0.12, 0.12, floor + 0.63, floor + 0.86);
+    foliage(b, [c[0] + x, floor + 1.02, c[1] + z], 0.24, 0.8);
+  }
+  shade(b, c, 0, 0, 0, 2.48, 1.53, floor, 0.12);
+}
+
+/** A square table with a chair on each side. */
 function bench(b: Builder, c: XZ, angle: number, length: number, depth: number, floor: number, height = 0.45) {
   const f = frame(c, angle);
   box(b, FURN.wood, f, 0, 0, length, depth, floor + height - 0.05, floor + height);
@@ -264,20 +393,6 @@ function basin(b: Builder, wall: XZ, face: number, floor: number, width = 0.5) {
   box(b, FURN.steel, f, 0.05, 0, 0.03, 0.03, floor + 0.85, floor + 1.0);
   box(b, FURN.steel, f, 0.11, 0, 0.13, 0.025, floor + 0.975, floor + 1.0);
   box(b, FURN.mirror, f, 0.006, 0, 0.012, width + 0.1, floor + 1.15, floor + 1.85);
-}
-
-/** A run of washbasins in a counter, with one long mirror. */
-function vanity(b: Builder, a: XZ, e: XZ, side: 1 | -1, floor: number, basins: number) {
-  cabinets(b, a, e, side, 0.55, floor, { height: 0.85, top: FURN.porcelain });
-  const length = dist(a, e);
-  const f = frame(mid(a, e), heading(a, e));
-  for (let i = 0; i < basins; i++) {
-    const x = -length / 2 + ((i + 0.5) * length) / basins;
-    b.prism(ellipse(f, x, side * 0.3, 0.2, 0.15), floor + 0.85, floor + 0.853, FURN.steel);
-    box(b, FURN.steel, f, x, side * 0.06, 0.03, 0.03, floor + 0.85, floor + 1.0);
-    box(b, FURN.steel, f, x, side * 0.12, 0.025, 0.13, floor + 0.975, floor + 1.0);
-  }
-  box(b, FURN.mirror, f, 0, side * 0.006, length - 0.1, 0.012, floor + 1.1, floor + 1.9);
 }
 
 /** A whiteboard on a wall face a→e, the room on `side`. */
@@ -360,14 +475,6 @@ function ceilingLight(b: Builder, c: XZ, ceiling: number, size = 0.5) {
   b.cap(FURN.lamp, ellipse(f, 0, 0, size / 2 - 0.03, size / 2 - 0.03, 18), [], ceiling - 0.042, -1);
 }
 
-/** A pendant lamp over a table. */
-function pendant(b: Builder, c: XZ, ceiling: number, bottom: number) {
-  const f = frame(c, 0);
-  box(b, FURN.frame, f, 0, 0, 0.012, 0.012, bottom + 0.22, ceiling);
-  b.prism(ellipse(f, 0, 0, 0.19, 0.19, 16), bottom, bottom + 0.22, FURN.frame, FURN.frame, { bottom: false });
-  b.cap(FURN.lamp, ellipse(f, 0, 0, 0.16, 0.16, 16), [], bottom + 0.04, -1);
-}
-
 /** Counter along an arc around c between radii r0 < r1 (the wall side is r1). */
 function arcCounter(b: Builder, c: XZ, r0: number, r1: number, a0: number, a1: number, floor: number, height = 0.9, top: string = FURN.wood) {
   b.prism(sector(c, r0 + 0.04, r1, a0, a1).poly, floor, floor + 0.08, FURN.frame);
@@ -448,26 +555,20 @@ function buildFinishes(f1: Builder, f2: Builder) {
   const lift = 0.004;
   f1.cap(FURN.tile, toiletFloor(), [], F1 + lift, 1);
   f2.cap(FURN.tile, toiletFloor(), [], F2 + lift, 1);
-  // washroom 7: between the inner wall, the radial wall at −41.8°, the hall arc and the end wall
-  const hall = ARC_PARTITIONS_F1[HALL_INNER];
-  const mid7 = (hall.r0 + hall.r1) / 2;
-  const endWall = (s: number) => leftEndFace(s);
-  f1.cap(FURN.tile, [...innerFace(-74, -41.8), polar(O, -41.8, rayToCircle(-41.8, I, mid7)), ...arcPoints(I, mid7, hall.to, hall.from, 1.5), endWall(0.2)], [], F1 + lift, 1);
   // laboratory 12: sheet vinyl
   f2.cap(FURN.vinyl, [...arcPoints(O, OUTER_IN, -41.85, 14.25, 1.5), ...innerFace(14.25, -41.85)], [], F2 + lift, 1);
 }
 
 // ---- Rooms --------------------------------------------------------------------------------------
 
-/** Indices into the curved partitions (see plan.ts). */
-const HALL_INNER = 2;
-const HALL_OUTER = 3;
+/** Index of the curved room divider between 15 and 16 (see plan.ts). */
 const DIVIDER_15_16 = 1;
 
-/** Lobby (1): interactive table, soil vitrine, seating, the timeline wall and its counter. */
+/** Lobby (1): six learning stops, with the timeline and seasonal model as the main exhibits. */
 function lobby(b: Builder) {
   touchTable(b, [0.64, -12.41], 0, 2.5, 0.85, F1);
   vitrine(b, [-2.84, -7.63], 0, 2.5, 0.85, F1);
+  seasonalModel(b, [0.2, -10.35], F1);
   // two benches with a planter between them
   bench(b, [2.57, -10.75], 0, 1.1, 0.38, F1);
   bench(b, [2.57, -9.96], 0, 1.1, 0.38, F1);
@@ -486,7 +587,7 @@ function lobby(b: Builder) {
   for (const t of [-3, 6]) ceilingLight(b, polar(O, t, 13.6), CEILING[0]);
 }
 
-/** Classroom (3): nine long desks facing the teacher's table and the whiteboard by the door. */
+/** Classroom (3): twenty student seats facing the teacher's table and the whiteboard. */
 function classroom(b: Builder) {
   const angle = 54.7;
   const desks: XZ[] = [
@@ -499,6 +600,7 @@ function classroom(b: Builder) {
     [-4.82, -10.48],
     [-3.83, -10.94],
     [-2.91, -11.28],
+    [-1.99, -11.66],
   ];
   for (const c of desks) {
     table(b, c, angle, 1.55, 0.55, F1);
@@ -511,38 +613,36 @@ function classroom(b: Builder) {
   for (const r of [11.8, 13.6]) for (const t of [-35, -27, -19, -12]) ceilingLight(b, polar(O, t, r), CEILING[0]);
 }
 
-/** Staff rooms 4 and 5: lockers, a table with two chairs, a basin. */
+/** Staff rooms 4 and 5: one bed and a locker set in each room. */
 function staffRooms(b: Builder) {
-  // room 4: lockers on the wall to room 3, basin beside them
+  // room 4: men's staff quarters
   cabinets(b, radialFace(-41.8, P, 12.0, -1), radialFace(-41.8, P, 14.55, -1), -1, 0.5, F1, { tall: true });
-  basin(b, radialFace(-41.8, P, 11.55, -1), -41.8 + 180, F1, 0.45);
-  table(b, [-11.49, -8.11], 34.7, 1.2, 0.8, F1);
-  for (const s of [-1, 1]) chair(b, frame([-11.49, -8.11], 34.7)(0, s * 0.52), 34.7 - s * 90, F1);
+  bed(b, [-11.65, -8.3], 35, F1);
   ceilingLight(b, polar(O, -49.5, 13.3), CEILING[0]);
-  // room 5: lockers on the end wall, basin in the corner by the hall
+  // room 5: women's staff quarters
   cabinets(b, leftEndFace(5.75), leftEndFace(7.75), 1, 0.5, F1, { tall: true });
-  basin(b, leftEndFace(5.4), heading(END.left.inner, END.left.outer) + 90, F1, 0.45);
-  table(b, [-12.35, -6.6], 25, 1.2, 0.8, F1);
-  for (const s of [-1, 1]) chair(b, frame([-12.35, -6.6], 25)(0, s * 0.52), 25 - s * 90, F1);
+  bed(b, [-13.1, -6.3], 25, F1);
   ceilingLight(b, polar(O, -66, 13.3), CEILING[0]);
 }
 
-/** Hall 6: a basin on the wall to room 5 and a bench on the wall to room 7. */
+/** Kitchen (6): compact preparation counter, sink, cooktop and refrigerator. */
 function hall6(b: Builder) {
-  const outer = ARC_PARTITIONS_F1[HALL_OUTER];
-  const inner = ARC_PARTITIONS_F1[HALL_INNER];
-  basin(b, polar(I, -61, outer.r0), towards(-61), F1, 0.45);
-  arcBench(b, I, inner.r1, inner.r1 + 0.42, -60.5, -52.5, F1);
+  arcCounter(b, I, 10.3, 10.9, -64, -45, F1, 0.9, FURN.worktop);
+  basin(b, polar(I, -59, 10.55), towards(-59), F1, 0.5);
+  appliance(b, polar(I, -50, 10.65), 40, 0.9, 0.72, 0.92, F1);
+  appliance(b, polar(I, -64, 11.2), 28, 0.78, 0.72, 1.8, F1);
   ceilingLight(b, polar(I, -50, 11.07), CEILING[0]);
   ceilingLight(b, polar(I, -61, 11.07), CEILING[0]);
 }
 
-/** Washroom 7: two toilets in cubicles on the wall to the lobby, basins on the end wall. */
-function washroom7(b: Builder) {
-  const face = -41.8 + 180;
-  for (const r of [7.2, 8.45]) toilet(b, radialFace(-41.8, P, r, -1), face, F1);
-  box(b, FURN.carcass, frame(radialFace(-41.8, P, 7.83, -1), face), 0.65, 0, 1.3, 0.03, F1 + 0.15, F1 + 2.0);
-  vanity(b, leftEndFace(0.75), leftEndFace(2.45), 1, F1, 2);
+/** Office (7): staff work desk, computer, storage and printer. */
+function office7(b: Builder) {
+  const desk = polar(I, -55, 8.75);
+  table(b, desk, 35, 1.6, 0.78, F1);
+  workstation(b, desk, 35, F1);
+  chair(b, frame(desk, 35)(0, 0.66), 35 + 180, F1);
+  cabinets(b, leftEndFace(0.75), leftEndFace(2.45), 1, 0.55, F1, { height: 1.85, tall: true });
+  appliance(b, polar(I, -68, 8.65), 22, 0.54, 0.5, 0.72, F1);
   ceilingLight(b, polar(O, -58, 8.0), CEILING[0]);
 }
 
@@ -560,24 +660,40 @@ function toilets(b: Builder, floor: number, ceiling: number) {
   for (const t of [18.3, 25.9]) ceilingLight(b, polar(O, t, 13.8), ceiling, 0.35);
 }
 
-/** Dining room 8: four tables of four. */
-function dining(b: Builder) {
-  const tables: XZ[] = [
+/** DIY workshop (8): reusable timber benches, a paper-making table and seed trays. */
+function workshop(b: Builder) {
+  const benches: XZ[] = [
     [8.09, -6.51],
     [10.46, -8.5],
     [12.08, -5.82],
-    [9.64, -4.35],
   ];
-  for (const c of tables) {
-    tableSet(b, c, -15, F1);
-    pendant(b, c, CEILING[0], F1 + 2.0);
+  for (const c of benches) {
+    table(b, c, -15, 1.85, 0.82, F1);
+    chair(b, frame(c, -15)(0, 0.68), 165, F1);
+    chair(b, frame(c, -15)(0, -0.68), -15, F1);
   }
-  pottedPlant(b, polar(O, 48, 13.9), F1);
+  // Reused wood stock, paper pulp tubs and a tray for seed-starting demonstrations.
+  cabinets(b, polar(O, 73, 12.6), polar(O, 59, 12.6), -1, 0.42, F1, { height: 0.9, top: FURN.wood });
+  const materialSamples: [XZ, string][] = [
+    [[8.55, -4.95], FURN.woodDark],
+    [[9.0, -4.95], FURN.equipment],
+    [[9.45, -4.95], FURN.seasonSpring],
+  ];
+  for (const [c, key] of materialSamples) {
+    box(b, key, frame(c, 0), 0, 0, 0.34, 0.36, F1, F1 + 0.32);
+  }
+  for (const c of benches) ceilingLight(b, polar(O, 58, Math.hypot(...c)), CEILING[0]);
 }
 
 /** Laboratory 12: three island benches, a counter under the courtyard window, a wall counter. */
 function laboratory(b: Builder) {
   for (const t of [-23.3, -7.9, 6.4]) labBench(b, t, 11.1, 14.55, F2);
+  for (const t of [-23.3, -7.9, 6.4]) {
+    const along = t - 90;
+    microscope(b, polar(O, t, 12.1), along, F2);
+    microscope(b, polar(O, t, 13.2), along, F2);
+    workstation(b, polar(O, t, 14.0), along, F2, 0.9);
+  }
   // counter along the inner wall, with a sink at its right end and two chairs
   const c = polar(I, -13, 7.95);
   const f = frame(c, -13);
@@ -588,6 +704,7 @@ function laboratory(b: Builder) {
   box(b, FURN.steel, f, 1.2, 0, 0.45, 0.4, F2 + 0.9, F2 + 0.903);
   box(b, FURN.steel, f, 1.2, 0.22, 0.03, 0.03, F2 + 0.9, F2 + 1.15);
   for (const x of [-0.9, 0.1]) chair(b, f(x, -0.42), -13 + 90, F2);
+  workstation(b, frame(c, -13)(-0.35, 0.08), -13, F2, 0.9);
   // wall counter with a shelf above, on the wall to room 14
   const a = radialFace(-41.85, P, 10.6, 1);
   const e = radialFace(-41.85, P, 14.45, 1);
@@ -596,35 +713,56 @@ function laboratory(b: Builder) {
   for (const r of [9.6, 11.8, 13.8]) for (const t of [-34, -24, -14, -4, 6]) ceilingLight(b, polar(O, t, r), CEILING[1]);
 }
 
-/** Stair hall 10 (first floor). */
+/** Changing and rest area (10): lockers and a quiet seating bench beside the stair hall. */
 function stairHall(b: Builder) {
-  // by the courtyard window, clear of the doors to the toilets and the laboratory
-  pottedPlant(b, polar(O, 22, 7.1), F2);
+  cabinets(b, polar(O, 19, 8.05), polar(O, 38, 8.05), 1, 0.52, F2, { height: 1.9, tall: true });
+  sofa(b, polar(O, 27, 9.5), 117, F2);
+  appliance(b, polar(O, 37, 9.0), 53, 0.36, 0.36, 1.08, F2);
+  pottedPlant(b, polar(O, 22, 7.1), F2, 0.8);
   ceilingLight(b, polar(O, 22, 9.3), CEILING[1]);
   ceilingLight(b, polar(O, 31, 10.3), CEILING[1]);
 }
 
-/** Room 11: a table of four and a long run of cabinets under the outer windows. */
+/** Microbiology lab (11): laminar hood, autoclave, PCR, incubator and microscopes. */
 function room11(b: Builder) {
-  tableSet(b, [8.82, -5.44], -15, F2);
   cabinets(b, polar(O, 45.8, OUTER_IN - 0.005), polar(O, 72.3, OUTER_IN - 0.005), 1, 0.8, F2, { height: 0.88, top: FURN.wood });
+  const hood = polar(O, 53, 11.15);
+  appliance(b, hood, 37, 1.65, 0.72, 1.55, F2, 'hood');
+  appliance(b, polar(O, 63, 11.3), 27, 0.82, 0.72, 1.35, F2);
+  appliance(b, polar(O, 71, 10.85), 19, 0.78, 0.65, 1.1, F2);
+  appliance(b, polar(O, 55, 12.55), 35, 0.72, 0.56, 0.78, F2);
+  const bench = polar(O, 60, 9.45);
+  table(b, bench, -30, 1.8, 0.78, F2, 0.9);
+  microscope(b, frame(bench, -30)(-0.42, 0), -30, F2);
+  microscope(b, frame(bench, -30)(0.38, 0), -30, F2);
+  workstation(b, frame(bench, -30)(0, -0.3), -30, F2);
+  appliance(b, frame(bench, -30)(0.55, 0.12), -30, 0.38, 0.34, 0.34, F2);
   ceilingLight(b, polar(O, 55, 10.4), CEILING[1]);
   ceilingLight(b, polar(O, 64, 12.6), CEILING[1]);
 }
 
 /** Rooms 14, 15, 16 (first floor, left wing): desk counter, shelving, desk, low cabinets. */
 function leftWingF2(b: Builder) {
-  // 14: counter on the wall to the laboratory, sink at its outer end
+  // 14: sample preparation and genetics equipment beside the laboratory wall.
   cabinets(b, radialFace(-41.85, P, 10.6, -1), radialFace(-41.85, P, 14.45, -1), -1, 0.6, F2);
   const sink = frame(radialFace(-41.85, P, 13.9, -1), -41.85 + 180);
   box(b, FURN.steel, sink, 0.3, 0, 0.4, 0.45, F2 + 0.9, F2 + 0.903);
   box(b, FURN.steel, sink, 0.06, 0, 0.03, 0.03, F2 + 0.9, F2 + 1.15);
   chair(b, frame(radialFace(-41.85, P, 11.8, -1), -41.85 + 180)(0.75, 0), -41.85, F2);
+  appliance(b, polar(O, -48, 10.4), 42, 1.45, 0.78, 1.55, F2, 'hood'); // fume hood
+  appliance(b, polar(O, -50, 12.2), 40, 0.62, 0.58, 0.78, F2); // sample grinder
+  appliance(b, polar(O, -46, 13.25), 44, 0.58, 0.58, 0.62, F2); // refrigerated centrifuge
+  appliance(b, polar(O, -54, 10.65), 36, 0.48, 0.48, 0.48, F2); // water bath
+  appliance(b, polar(O, -51, 13.6), 39, 0.64, 0.5, 0.65, F2); // gel documentation
+  appliance(b, polar(O, -56, 12.2), 34, 0.48, 0.48, 0.52, F2); // ultrasonic cleaner
   ceilingLight(b, polar(O, -49.5, 10.5), CEILING[1]);
   ceilingLight(b, polar(O, -49.5, 13.2), CEILING[1]);
-  // 15: desk on the end wall, shelving along the curved wall to room 16
-  cabinets(b, leftEndFace(0.8), leftEndFace(2.5), 1, 0.6, F2, { height: 0.75, top: FURN.wood });
-  chair(b, frame(leftEndFace(1.65), heading(END.left.inner, END.left.outer) + 90)(0.55, 0), heading(END.left.inner, END.left.outer) - 90, F2);
+  // 15: dedicated chemical safety cabinets and an extraction unit.
+  cabinets(b, leftEndFace(0.8), leftEndFace(2.5), 1, 0.6, F2, { height: 1.9, tall: true });
+  appliance(b, polar(O, -62, 11.25), 28, 0.85, 0.62, 1.65, F2);
+  const safeCabinet = frame(polar(O, -59, 13.1), 31);
+  box(b, FURN.chemical, safeCabinet, 0, 0, 0.82, 0.62, F2, F2 + 1.8);
+  box(b, FURN.equipmentDark, safeCabinet, 0, 0.32, 0.72, 0.018, F2 + 0.15, F2 + 1.65);
   // the curved wall in three straight runs, the room on the side towards I
   const divider = ARC_PARTITIONS_F2[DIVIDER_15_16];
   const face = divider.r0;
@@ -637,9 +775,14 @@ function leftWingF2(b: Builder) {
     shelving(b, polar(I, a0, face), polar(I, a1, face), 1, 0.4, F2, 2.0, 5, 40 + i);
   }
   ceilingLight(b, polar(O, -66, 9.2), CEILING[1]);
-  // 16: low cabinets under the outer window, a counter on the end wall
+  // 16: ultra-low freezer, standard laboratory refrigerator and a liquid-nitrogen Dewar.
   arcCounter(b, O, OUTER_IN - 0.45, OUTER_IN - 0.005, -72.3, -57.8, F2, 0.85, FURN.wood);
   cabinets(b, leftEndFace(5.3), leftEndFace(7.25), 1, 0.6, F2);
+  appliance(b, polar(O, -68, 11.5), 22, 0.9, 0.82, 1.28, F2);
+  appliance(b, polar(O, -72, 13.2), 18, 0.72, 0.72, 1.45, F2);
+  const dewar = frame(polar(O, -65, 9.3), 25);
+  b.prism(ellipse(dewar, 0, 0, 0.24, 0.24), F2, F2 + 0.72, FURN.steel);
+  b.prism(ellipse(dewar, 0, 0, 0.16, 0.16), F2 + 0.72, F2 + 0.82, FURN.equipmentDark);
   ceilingLight(b, polar(O, -66, 13.2), CEILING[1]);
 }
 
@@ -650,9 +793,9 @@ export function buildFurniture(f1: Builder, f2: Builder) {
   classroom(f1);
   staffRooms(f1);
   hall6(f1);
-  washroom7(f1);
+  office7(f1);
   toilets(f1, F1, CEILING[0]);
-  dining(f1);
+  workshop(f1);
   laboratory(f2);
   stairHall(f2);
   room11(f2);
