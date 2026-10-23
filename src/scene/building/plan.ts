@@ -287,9 +287,8 @@ export const PARTITIONS_F2: Partition[] = [
   // toilets 13
   chord(29.4, 12.78, 32.6, OUTER_IN, P),
   radial(22.45, 0.2, [], 12.9),
-  // stair hall 10 | room 11
-  // Set the lab-11 doorway inward from its perimeter worktop for a clear landing approach.
-  radial(44.9, P, [{ at: 12.4, width: 1.4, hinge: 'start', into: polar(O, 50, 12.4) }]),
+  // stair hall 10 | room 11: align the opening with the stair's upper landing.
+  radial(44.9, P, [{ at: 13.1, width: 1.4, hinge: 'start', into: polar(O, 50, 13.1) }]),
 ];
 
 export const ARC_PARTITIONS_F2: ArcPartition[] = [

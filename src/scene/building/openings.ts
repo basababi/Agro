@@ -9,6 +9,7 @@ export const OPEN = {
   frame: 'windowFrame',
   sill: 'sill',
   door: 'doorLeaf',
+  leafFrame: 'doorLeafFrame',
   doorFrame: 'doorFrame',
   doorGlass: 'windowGlass',
 } as const;
@@ -98,10 +99,10 @@ function entrance(b: Builder, o: ArcOpening, floor: number) {
 function glassLeaf(b: Builder, hinge: XZ, tip: XZ, y0: number, y1: number) {
   const n: V3 = [-(tip[1] - hinge[1]), 0, tip[0] - hinge[0]];
   b.quad(OPEN.doorGlass, [hinge[0], y0 + 0.1, hinge[1]], [tip[0], y0 + 0.1, tip[1]], [tip[0], y1 - 0.08, tip[1]], [hinge[0], y1 - 0.08, hinge[1]], n);
-  b.beam(OPEN.frame, hinge, tip, DOOR_LEAF, y0, y0 + 0.1);
-  b.beam(OPEN.frame, hinge, tip, DOOR_LEAF, y1 - 0.08, y1);
-  post(b, OPEN.frame, hinge, 0.05, y0, y1);
-  post(b, OPEN.frame, tip, 0.05, y0, y1);
+  b.beam(OPEN.leafFrame, hinge, tip, DOOR_LEAF, y0, y0 + 0.1);
+  b.beam(OPEN.leafFrame, hinge, tip, DOOR_LEAF, y1 - 0.08, y1);
+  post(b, OPEN.leafFrame, hinge, 0.05, y0, y1);
+  post(b, OPEN.leafFrame, tip, 0.05, y0, y1);
 }
 
 /** Frame and open leaf of a door in a straight wall. */
@@ -132,7 +133,7 @@ function lineDoor(b: Builder, a: XZ, bEnd: XZ, thickness: number, offset: number
     b.beam(OPEN.door, hingeAtFace, tip, DOOR_LEAF, floor + 0.01, floor + head - 0.06);
     // handle
     const knob = lerp2(hingeAtFace, tip, 0.88);
-    post(b, OPEN.frame, knob, 0.07, floor + 1.0, floor + 1.03);
+    post(b, OPEN.leafFrame, knob, 0.07, floor + 1.0, floor + 1.03);
   }
 }
 

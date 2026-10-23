@@ -14,7 +14,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { MeshBVH } from 'three-mesh-bvh';
 
 /** Never solid: glowing signs and screens, small plants, water (the pond can be waded). */
-const PASSABLE_MATERIALS = new Set(['screen', 'growlight', 'text', 'plant', 'water']);
+const PASSABLE_MATERIALS = new Set(['doorLeafFrame', 'screen', 'growlight', 'text', 'plant', 'water']);
 /** Flower colours (outdoors only). */
 const FLOWER_MATERIALS = new Set(['pink', 'yellow', 'purple', 'orange']);
 /** Trees get a trunk cylinder; shrubs and crowns can be walked through. */

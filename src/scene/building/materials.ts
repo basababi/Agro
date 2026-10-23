@@ -34,6 +34,7 @@ const OWN: Record<string, Spec> = {
   windowFrame: { color: '#3c4247', roughness: 0.45, metalness: 0.55 },
   metalDark: { color: '#3a3f44', roughness: 0.4, metalness: 0.6 },
   doorFrame: { color: '#e4e0d8', roughness: 0.6 },
+  doorLeafFrame: { color: '#e4e0d8', roughness: 0.6 },
   doorLeaf: { color: '#c08f60', roughness: 0.5, map: 'woodGrain' },
   woodLight: { color: '#d6ad7c', roughness: 0.55, map: 'woodGrain' },
   sill: { color: '#a9a49a', roughness: 0.8 },

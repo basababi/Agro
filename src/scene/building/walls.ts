@@ -174,11 +174,30 @@ export function buildWalls(shell: Builder, interior: [Builder, Builder]) {
     const plinthKey = () => key;
     const outer = sector(O, OUTER_IN, OUTER_OUT, -OUTER_END, OUTER_END);
     shell.prism(outer.poly, y0, y1, plinthKey, key);
-    const inner = sector(I, INNER_OUT, INNER_IN, -INNER_END, INNER_END);
-    shell.prism(inner.poly, y0, y1, plinthKey, key);
+    // The plinth follows the wall, but must stop below the ground-floor entrance opening.
+    const entranceGaps = STOREYS[0].innerOpenings.filter((opening) => opening.kind === 'entrance');
+    for (const [from, to, opening] of pieces(-INNER_END, INNER_END, entranceGaps)) {
+      if (opening) continue;
+      const inner = sector(I, INNER_OUT, INNER_IN, from, to);
+      shell.prism(inner.poly, y0, y1, plinthKey, key);
+    }
     for (const end of [END.left, END.right]) {
       const side = end === END.left ? -1 : 1;
-      shell.prism(strip(end.inner, end.outer, ex, (-side * ex) / 2), y0, y1, plinthKey, key);
+      const openings = end === END.right
+        ? STOREYS[0].endOpenings.filter((opening) => opening.kind === 'door')
+        : [];
+      if (openings.length === 0) {
+        shell.prism(strip(end.inner, end.outer, ex, (-side * ex) / 2), y0, y1, plinthKey, key);
+        continue;
+      }
+      const length = Math.hypot(end.outer[0] - end.inner[0], end.outer[1] - end.inner[1]);
+      const gaps = openings.map((opening) => ({ ...opening, sill: 0, head: y1 - y0 }));
+      for (const [from, to, opening] of pieces(0, length, gaps)) {
+        if (opening) continue;
+        const p0 = lerp2(end.inner, end.outer, from / length);
+        const p1 = lerp2(end.inner, end.outer, to / length);
+        shell.prism(strip(p0, p1, ex, (-side * ex) / 2), y0, y1, plinthKey, key);
+      }
     }
   }
 

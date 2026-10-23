@@ -13,7 +13,7 @@ import { buildStair, stairRamp } from './stair';
 import { buildWalls } from './walls';
 
 /** Materials that must not stop the walker (thin, or doors shown open). */
-const PASSABLE = new Set(['doorLeaf', 'growlight', 'plant', ...PASSABLE_FURNITURE]);
+const PASSABLE = new Set(['doorLeaf', 'doorLeafFrame', 'growlight', 'plant', ...PASSABLE_FURNITURE]);
 
 export function buildBuilding(modelMaterials: Record<string, Material>): Group {
   const material = createMaterials(modelMaterials);
