@@ -624,25 +624,22 @@ function lobby(b: Builder) {
   for (const t of [-3, 6]) ceilingLight(b, polar(O, t, 13.6), CEILING[0]);
 }
 
-/** Classroom (3): twenty student seats facing the teacher's table and the whiteboard. */
+/** Classroom (3): twelve student seats facing the teacher's table and the whiteboard. */
 function classroom(b: Builder) {
   const angle = 54.7;
+  // Six two-seat tables keep an open centre aisle to the door and a clear teaching zone.
   const desks: XZ[] = [
     [-7.16, -11.82],
-    [-6.2, -12.32],
     [-5.25, -12.78],
-    [-4.3, -13.13],
     [-3.28, -13.46],
     [-5.8, -9.95],
-    [-4.82, -10.48],
     [-3.83, -10.94],
-    [-2.91, -11.28],
     [-1.99, -11.66],
   ];
   for (const c of desks) {
-    table(b, c, angle, 1.55, 0.55, F1);
+    table(b, c, angle, 1.3, 0.58, F1);
     const f = frame(c, angle);
-    for (const x of [-0.38, 0.38]) chair(b, f(x, -0.5), angle + 90, F1);
+    for (const x of [-0.32, 0.32]) chair(b, f(x, -0.5), angle + 90, F1);
   }
   table(b, [-7.62, -10.17], 49, 0.9, 0.6, F1);
   chair(b, frame([-7.62, -10.17], 49)(0, 0.5), 49 - 90, F1);
@@ -701,9 +698,9 @@ function toilets(b: Builder, floor: number, ceiling: number) {
 /** DIY workshop (8): reusable timber benches, a paper-making table and seed trays. */
 function workshop(b: Builder) {
   const benches: XZ[] = [
-    [8.09, -6.51],
-    [10.46, -8.5],
-    [12.08, -5.82],
+    polar(O, 49, 11.6),
+    polar(O, 60, 13.5),
+    polar(O, 72, 13.4),
   ];
   for (const c of benches) {
     table(b, c, -15, 1.85, 0.82, F1);
@@ -727,12 +724,13 @@ function workshop(b: Builder) {
 
 /** Laboratory 12: three island benches, a counter under the courtyard window, a wall counter. */
 function laboratory(b: Builder) {
-  for (const t of [-23.3, -7.9, 6.4]) labBench(b, t, 11.1, 14.55, F2);
+  // Leave a continuous 1.2 m perimeter aisle behind the island benches.
+  for (const t of [-23.3, -7.9, 6.4]) labBench(b, t, 10.9, 13.1, F2);
   for (const t of [-23.3, -7.9, 6.4]) {
     const along = t - 90;
-    microscope(b, polar(O, t, 12.1), along, F2);
-    microscope(b, polar(O, t, 13.2), along, F2);
-    workstation(b, polar(O, t, 14.0), along, F2, 0.9);
+    microscope(b, polar(O, t, 11.7), along, F2);
+    microscope(b, polar(O, t, 12.4), along, F2);
+    workstation(b, polar(O, t, 12.85), along, F2, 0.9);
   }
   // counter along the inner wall, with a sink at its right end and two chairs
   const c = polar(I, -13, 7.95);
@@ -789,7 +787,8 @@ function leftWingF2(b: Builder) {
   box(b, FURN.steel, sink, 0.3, 0, 0.4, 0.45, F2 + 0.9, F2 + 0.903);
   box(b, FURN.steel, sink, 0.06, 0, 0.03, 0.03, F2 + 0.9, F2 + 1.15);
   chair(b, frame(radialFace(-41.85, P, 11.8, -1), -41.85 + 180)(0.75, 0), -41.85, F2);
-  appliance(b, polar(O, -48, 10.4), 42, 1.45, 0.78, 1.55, F2, 'hood'); // fume hood
+  // Move the extraction hood out of the doorway and keep the inner approach clear.
+  appliance(b, polar(O, -48, 11.65), 42, 1.45, 0.78, 1.55, F2, 'hood'); // fume hood
   appliance(b, polar(O, -50, 12.2), 40, 0.62, 0.58, 0.78, F2); // sample grinder
   appliance(b, polar(O, -46, 13.25), 44, 0.58, 0.58, 0.62, F2); // refrigerated centrifuge
   appliance(b, polar(O, -54, 10.65), 36, 0.48, 0.48, 0.48, F2); // water bath
@@ -799,7 +798,7 @@ function leftWingF2(b: Builder) {
   ceilingLight(b, polar(O, -49.5, 13.2), CEILING[1]);
   // 15: dedicated chemical safety cabinets and an extraction unit.
   cabinets(b, leftEndFace(0.8), leftEndFace(2.5), 1, 0.6, F2, { height: 1.9, tall: true });
-  appliance(b, polar(O, -62, 11.25), 28, 0.85, 0.62, 1.65, F2);
+  appliance(b, polar(O, -62, 12.5), 28, 0.85, 0.62, 1.65, F2);
   const safeCabinet = frame(polar(O, -59, 13.1), 31);
   box(b, FURN.chemical, safeCabinet, 0, 0, 0.82, 0.62, F2, F2 + 1.8);
   box(b, FURN.equipmentDark, safeCabinet, 0, 0.32, 0.72, 0.018, F2 + 0.15, F2 + 1.65);

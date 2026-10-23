@@ -82,9 +82,10 @@ export function buildGreenhouse(b: Builder) {
 
   // Three distinct zones: forest seedlings, vertical hydroponics, and medicinal/rare specimens.
   const zones = [
-    { s: 0.2, kind: 'seedlings' },
-    { s: 0.5, kind: 'hydroponics' },
-    { s: 0.8, kind: 'specimens' },
+    // Offset the first beds from the doorway; the middle 1.2 m aisle stays continuous.
+    { s: 0.35, kind: 'seedlings' },
+    { s: 0.65, kind: 'hydroponics' },
+    { s: 0.88, kind: 'specimens' },
   ] as const;
   for (const { s, kind } of zones) {
     const p0 = lerp2(a, bb, s - 0.055);
@@ -92,7 +93,7 @@ export function buildGreenhouse(b: Builder) {
     const q0 = lerp2(d, c, s - 0.055);
     const q1 = lerp2(d, c, s + 0.055);
     // Two bed modules leave a 1.2 m cross aisle through the greenhouse.
-    for (const [nearT, farT] of [[0.14, 0.41], [0.59, 0.88]] as const) {
+    for (const [nearT, farT] of [[0.2, 0.41], [0.59, 0.86]] as const) {
       const near0 = lerp2(p0, q0, nearT);
       const near1 = lerp2(p1, q1, nearT);
       const far0 = lerp2(p0, q0, farT);

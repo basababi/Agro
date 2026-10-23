@@ -122,11 +122,11 @@ export const OUTER_WINDOWS_F2: ArcOpening[] = OUTER_WINDOWS.map((w) => ({ ...w, 
 
 /**
  * Right end wall (between the dining room 8 and the greenhouse 9), measured along the wall from
- * its inner end: the 900 door to the greenhouse and the 3000 window.
+ * its inner end: the 1200 door to the greenhouse and the 2700 window.
  */
 export const RIGHT_END_OPENINGS_F1: LineOpening[] = [
-  { from: 0.76, to: 1.66, kind: 'door', sill: 0, head: 2.1, hinge: 'end', swing: 1 },
-  { from: 2.64, to: 5.6, kind: 'window', sill: 0.9, head: 3.0, bars: 2 },
+  { from: 3.25, to: 4.45, kind: 'door', sill: 0, head: 2.1, hinge: 'end', swing: 1 },
+  { from: 4.9, to: 7.6, kind: 'window', sill: 0.9, head: 3.0, bars: 2 },
 ];
 export const RIGHT_END_OPENINGS_F2: LineOpening[] = [{ from: 2.11, to: 5.07, kind: 'window', sill: 0.9, head: 2.7, bars: 2 }];
 
@@ -207,7 +207,7 @@ const P = WALL.partition;
 
 export const PARTITIONS_F1: Partition[] = [
   // lobby | rooms 7, 6 and room 3 | room 4; door from the lobby into the hall 6
-  radial(-41.8, P, [{ at: 9.88, width: 0.9, hinge: 'end', into: polar(O, -35, 9.9) }]),
+  radial(-41.8, P, [{ at: 9.88, width: 1.1, hinge: 'end', into: polar(O, -35, 9.9) }]),
   // room 5 | room 4
   radial(-57.25, P, [], 11.3),
   // room 3 | lobby: radial wall and the curved wall with the door at its left end (built as an arc)
@@ -216,8 +216,9 @@ export const PARTITIONS_F1: Partition[] = [
   radial(14.25, 0.22, [], 12.78),
   chord(29.4, 12.78, 32.6, OUTER_IN, P),
   radial(22.45, 0.2, [], 12.9),
-  // stair / lobby | dining room 8, door near the inner wall
-  radial(44.9, P, [{ at: 7.2, width: 0.9, hinge: 'start', into: polar(O, 50, 8.5) }]),
+  // stair / lobby | dining room 8, doorway beyond the stair flight
+  // The threshold clears both the stair end and the outer-wall corner.
+  radial(44.9, P, [{ at: 13.1, width: 1.4, hinge: 'start', into: polar(O, 50, 13.1) }]),
 ];
 
 /**
@@ -260,33 +261,35 @@ const HALL_OUTER_RADIUS = 12.04;
 
 export const ARC_PARTITIONS_F1: ArcPartition[] = [
   // room 3 | lobby, door at the left end
-  { r0: 10.43, r1: 10.67, from: -41.2, to: -9.5, doors: [{ from: -40.6, to: -35.9 }] },
+  { r0: 10.43, r1: 10.67, from: -41.2, to: -9.5, doors: [{ from: -40.6, to: -32.5 }] },
   // toilets 2 front wall with two doors
   { r0: 12.77, r1: 12.89, from: 14.25, to: 29.6, doors: [{ from: 15.2, to: 18.4 }, { from: 26.2, to: 29.4 }] },
   // room 7 | hall 6
-  hallArc(HALL_INNER_RADIUS, 0.23, -41.8, [{ at: -53, width: 0.9, into: polar(O, -53, 8.6) }]),
+  hallArc(HALL_INNER_RADIUS, 0.23, -41.8, [{ at: -53, width: 1.1, into: polar(O, -53, 8.6) }]),
   // hall 6 | rooms 5 and 4
   hallArc(HALL_OUTER_RADIUS, P, -41.8, [
-    { at: -60.15, width: 0.9, into: polar(O, -62, 12.5) },
-    { at: -54.0, width: 0.9, into: polar(O, -52, 12.5) },
+    { at: -60.15, width: 1.1, into: polar(O, -62, 12.5) },
+    { at: -54.0, width: 1.1, into: polar(O, -52, 12.5) },
   ]),
 ];
 
 export const PARTITIONS_F2: Partition[] = [
   // room 14 | rooms 15, 16, doors to both
   radial(-57.1, P, [
-    { at: 7.4, width: 0.9, hinge: 'start', into: polar(O, -62, 8.5) },
-    { at: 11.97, width: 0.9, hinge: 'end', into: polar(O, -62, 13) },
+    // Keep the first opening clear of the inner curved wall at the partition's start.
+    { at: 8.3, width: 1.2, hinge: 'start', into: polar(O, -62, 9.2) },
+    { at: 11.97, width: 1.2, hinge: 'end', into: polar(O, -62, 13) },
   ]),
   // laboratory 12 | room 14
-  radial(-41.85, P, [{ at: 9.89, width: 0.9, hinge: 'start', into: polar(O, -50, 10) }]),
+  radial(-41.85, P, [{ at: 9.89, width: 1.2, hinge: 'start', into: polar(O, -50, 10) }]),
   // laboratory 12 | stair hall 10: 1800 double door
   radial(14.25, 0.25, [{ at: 9.21, width: 1.8, double: true, into: polar(O, 5, 9.2) }]),
   // toilets 13
   chord(29.4, 12.78, 32.6, OUTER_IN, P),
   radial(22.45, 0.2, [], 12.9),
   // stair hall 10 | room 11
-  radial(44.9, P, [{ at: 7.2, width: 0.9, hinge: 'start', into: polar(O, 50, 8.5) }]),
+  // Set the lab-11 doorway inward from its perimeter worktop for a clear landing approach.
+  radial(44.9, P, [{ at: 12.4, width: 1.4, hinge: 'start', into: polar(O, 50, 12.4) }]),
 ];
 
 export const ARC_PARTITIONS_F2: ArcPartition[] = [
@@ -301,8 +304,8 @@ export const ARC_PARTITIONS_F2: ArcPartition[] = [
 // so that it can be climbed like a real stair (38°).
 export const STAIR = {
   theta: 44.9,
-  /** Distance of the flight's wall-side edge from the wall centre line. */
-  offset: P / 2,
+  /** Keep a 1.2 m clear passage between the stair flight and its partition wall. */
+  offset: P / 2 + 1.2,
   width: 1.5,
   start: 8.5,
   end: 13.1,
